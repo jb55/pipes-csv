@@ -1,11 +1,10 @@
 
-import qualified Pipes.Csv as C
-import Pipes.ByteString
-import Data.Csv
+import Pipes.Csv (decode)
+import Pipes.ByteString (stdin, ByteString)
+import Data.Csv (Record)
 import Pipes
-import Pipes.Core
 
 decoder :: Monad m => Pipe ByteString (Either String Record) m ()
-decoder = C.decodeWith defaultDecodeOptions False
+decoder = decode False
 
 main = runEffect $ for (stdin >-> decoder) (lift . print)
