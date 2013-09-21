@@ -14,37 +14,48 @@ module Pipes.Csv (
 ) where
 
 import qualified Data.Csv.Incremental as CI
+import qualified Data.ByteString as B
 
 import Data.Csv.Incremental (Parser(..))
 import Data.Csv (DecodeOptions, FromRecord, defaultDecodeOptions)
 import Data.ByteString (ByteString)
-import Pipes (yield, each, await, Pipe)
+import Pipes (yield, each, lift, next, Producer)
 
--- | Create a Pipe from a Record Parser
-feedParser :: Monad m 
-             => Parser a 
-             -> Pipe ByteString (Either String a) m ()
-feedParser p =
-  case p of
-    (Fail _ e)     -> yield (Left e) >> return ()
-    (Partial cont) -> continue cont
-    (Some es cont) -> each es >> continue cont
-    (Done es)      -> each es >> return ()
+-- | Create a Record 'Producer' by feeding 'ByteString's into a 'Parser'
+feedParser :: Monad m
+           => Parser a
+           -> Producer ByteString m ()
+           -> Producer (Either String a) m ()
+feedParser parser source =
+  case parser of
+    Fail _ e  -> yield (Left e)
+    Done es   -> each es
+    Some es k -> each es >> continue k source
+    Partial k -> continue k source
   where
-    continue cont = await >>= feedParser . cont
+    continue k producer = do
+      x <- lift (next producer)
+      case x of
+        Left () -> feedParser (k B.empty) (return ())
+        Right (bs, producer') ->
+          if (B.null bs)
+          then continue k producer'
+          else feedParser (k bs) producer'
 
 -- | Equivalent to @'decodeWith' 'defaultDecodeOptions'@.
-decode :: (Monad m, FromRecord a) 
+decode :: (Monad m, FromRecord a)
        => Bool
-       -> Pipe ByteString (Either String a) m ()
+       -> Producer ByteString m ()
+       -> Producer (Either String a) m ()
 decode = decodeWith defaultDecodeOptions
 
 
--- | Create a 'Pipe' that takes 'ByteString' input, producing either errors
--- or CSV records.
+-- | Create a 'Producer' that takes a 'ByteString' 'Producer' as input,
+-- producing either errors or CSV records.
 decodeWith :: (Monad m, FromRecord a)
            => DecodeOptions
            -> Bool
-           -> Pipe ByteString (Either String a) m ()
-decodeWith opts skipHeader = feedParser (CI.decodeWith opts skipHeader)
+           -> Producer ByteString m ()
+           -> Producer (Either String a) m ()
+decodeWith opts skipHeader src = feedParser (CI.decodeWith opts skipHeader) src
 
