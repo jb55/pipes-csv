@@ -4,7 +4,10 @@ import Pipes.ByteString (stdin, ByteString)
 import Data.Csv (Record)
 import Pipes
 
-decoder :: Monad m => Pipe ByteString (Either String Record) m ()
+decoder :: Monad m => Producer ByteString m () -> Producer (Either String Record) m ()
 decoder = decode False
 
-main = runEffect $ for (stdin >-> decoder) (lift . print)
+decoder2 :: Monad m => Producer ByteString m () -> Producer (Either String (Int, Int)) m ()
+decoder2 = decode False
+
+main = runEffect $ for (decoder stdin) (lift . print)
