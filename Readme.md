@@ -12,15 +12,28 @@
 ## Example
 
 ```haskell
-import Pipes.Csv (decode)
+{-# LANGUAGE OverloadedStrings #-}
+
+import Pipes.Csv (decode, decodeByName)
 import Pipes.ByteString (stdin, ByteString)
-import Data.Csv (Record)
+import Data.Csv ((.:), FromNamedRecord(..), Record)
 import Pipes
+import Control.Applicative
 
-decoder :: Monad m => Producer (Either String Record) m ()
-decoder = decode False stdin
+data Person = Person String Int
+            deriving (Show)
 
-main = runEffect $ for decoder (lift . print)
+instance FromNamedRecord Person where
+  parseNamedRecord p =
+    Person <$> p .: "name"
+           <*> p .: "age"
+
+persons :: Monad m
+        => Producer ByteString m ()
+        -> Producer (Either String Person) m ()
+persons = decodeByName
+
+main = runEffect $ for (persons stdin) (lift . print)
 ```
 
 
