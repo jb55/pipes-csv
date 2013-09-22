@@ -90,7 +90,7 @@ decodeWith opts skipHeader src = feedParser (CI.decodeWith opts skipHeader) src
 -- | Equivalent to @'decodeByNameWith' 'defaultDecodeOptions'@.
 decodeByName :: (Monad m, FromNamedRecord a)
              => Producer ByteString m ()
-             => Producer (Either String a) m ()
+             -> Producer (Either String a) m ()
 decodeByName = decodeByNameWith defaultDecodeOptions
 
 
