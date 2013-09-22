@@ -45,7 +45,7 @@ feedHeaderParser :: (Monad m, FromNamedRecord a)
                  -> Producer ByteString m ()
                  -> Producer (Either String a) m ()
 feedHeaderParser headerParser source = case headerParser of
-    FailH bs e -> yield (Left e)
+    FailH _bs e -> yield (Left e)
     PartialH k -> cont k source
     DoneH _ p  -> feedParser p source
   where
