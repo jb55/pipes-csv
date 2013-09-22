@@ -37,7 +37,7 @@ feedParser parser source = case parser of
 
 
 -- | Create a NamedRecord 'Producer' by feeding 'ByteString's into a 'Parser'
-feedHeaderParser :: (Monad m, FromNamedRecord a)
+feedHeaderParser :: (Monad m)
                  => HeaderParser (Parser a)
                  -> Producer ByteString m ()
                  -> Producer (Either String a) m ()
