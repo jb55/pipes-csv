@@ -5,12 +5,17 @@
 -}
 
 module Pipes.Csv (
-  feedParser,
-  feedHeaderParser,
+  -- * Decode records
   decode,
   decodeWith,
+
+  -- * Decode named records
   decodeByName,
-  decodeByNameWith
+  decodeByNameWith,
+
+  -- * Decode parsed records
+  feedParser,
+  feedHeaderParser
 ) where
 
 import qualified Data.Csv.Incremental as CI
