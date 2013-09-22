@@ -4,9 +4,6 @@
     constant-space record streaming.
 -}
 
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 module Pipes.Csv (
   feedParser,
   feedHeaderParser,
@@ -101,5 +98,3 @@ decodeByNameWith :: (Monad m, FromNamedRecord a)
                  -> Producer ByteString m ()
                  -> Producer (Either String a) m ()
 decodeByNameWith opts src = feedHeaderParser (CI.decodeByNameWith opts) src
-
-
