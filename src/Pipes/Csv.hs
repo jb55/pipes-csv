@@ -15,15 +15,20 @@ module Pipes.Csv (
 
   -- * Decode parsed records
   feedParser,
-  feedHeaderParser
+  feedHeaderParser,
+
+-- * Re-exports
+-- $reexports
+  module Data.Csv
 ) where
 
 import qualified Data.Csv.Incremental as CI
 import qualified Data.ByteString as B
 
 import Data.Csv.Incremental (Parser(..), HeaderParser(..))
-import Data.Csv (DecodeOptions, FromRecord,
-                 FromNamedRecord, defaultDecodeOptions)
+import Data.Csv (DecodeOptions, FromRecord(..), FromNamedRecord(..),
+                 ToRecord(..), ToField(..), FromField(..), defaultDecodeOptions,
+                 ToNamedRecord(..), Record, Field, NamedRecord, (.!), (.:), (.=))
 import Data.ByteString (ByteString)
 import Pipes
 
@@ -103,3 +108,19 @@ decodeByNameWith :: (Monad m, FromNamedRecord a)
                  -> Producer ByteString m ()
                  -> Producer (Either String a) m ()
 decodeByNameWith opts src = feedHeaderParser (CI.decodeByNameWith opts) src
+
+
+-- $reexports
+--
+-- "Data.Csv" re-exports common types and operators:
+--
+--    * 'FromRecord', 'FromNamedRecord', 'ToRecord', 'ToNamedRecord'
+--
+--    * 'ToField', 'FromField'
+--
+--    * 'Record', 'Field', 'NamedRecord'
+--
+--    * '(.!)', '(.:)', '(.=)'
+--
+--    * 'DecodeOptions', 'defaultDecodeOptions'
+--
