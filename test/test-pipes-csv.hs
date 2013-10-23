@@ -24,18 +24,14 @@ import qualified Pipes.Prelude as P
 right :: (Monad m) => Pipe (Either a b) b m r
 right = loop
   where
-    loop = do
-	s <- await
-	case s of
-	    (Left _)  -> loop
-	    (Right v) -> do
-		yield v
-		loop
+    loop = await >>= \s -> case s of
+      Left _  -> loop
+      Right v -> yield v >> loop
 
 -- decode to vector
 decoder :: Monad m
-	=> Producer ByteString m ()
-	-> Producer (Either String Record) m ()
+        => Producer ByteString m ()
+        -> Producer (Either String Record) m ()
 decoder = decode False
 
 decoderStream =
@@ -50,7 +46,7 @@ decoderStream =
 
 decoderResult =
     [
-	["1"]
+        ["1"]
       , ["1","2"]
       , ["1","2","3"]
       , ["no line end needed on last chunk"]
@@ -66,8 +62,8 @@ ioDecoder = runEffect $
 
 -- decode to Int tuple
 decoderTuple :: Monad m
-	 => Producer ByteString m ()
-	 -> Producer (Either String (Int, Int)) m ()
+         => Producer ByteString m ()
+         -> Producer (Either String (Int, Int)) m ()
 decoderTuple = decode False
 
 decoderTupleStream =
@@ -102,16 +98,16 @@ ioDecoderTuple = runEffect $
 -- (unnamed) Person Record
 
 data Person = Person String Int
-	    deriving (Show, Eq)
+            deriving (Show, Eq)
 
 instance FromRecord Person where
   parseRecord v =
     Person <$> v .! 0
-	   <*> v .! 1
+           <*> v .! 1
 
 decoderPerson :: Monad m
-	=> Producer ByteString m ()
-	-> Producer (Either String Person) m ()
+        => Producer ByteString m ()
+        -> Producer (Either String Person) m ()
 decoderPerson = decode False
 
 decoderPersonStream =
@@ -159,11 +155,11 @@ data Person' = Person' {
 instance FromRecord Person' where
   parseRecord v =
     Person' <$> v .! 0
-	    <*> v .! 1
+            <*> v .! 1
 
 decoderPerson' :: Monad m
-	=> Producer ByteString m ()
-	-> Producer (Either String Person') m ()
+        => Producer ByteString m ()
+        -> Producer (Either String Person') m ()
 decoderPerson' = decode False
 
 ioDecoderPerson' = runEffect $
@@ -175,24 +171,24 @@ testDecoderPerson' :: Assertion
 testDecoderPerson' =
     decoderPerson'Result @=?
     P.toList (decoderPerson' (each $ map C.pack decoderPersonStream)
-	>-> right >-> P.map age)
+        >-> right >-> P.map age)
 
 -- named person record
 instance FromNamedRecord Person where
   parseNamedRecord p =
     Person <$> p .: "name"
-	   <*> p .: "age"
+           <*> p .: "age"
 
 decoderNamedPerson :: Monad m
-	=> Producer ByteString m ()
-	-> Producer (Either String Person) m ()
+        => Producer ByteString m ()
+        -> Producer (Either String Person) m ()
 decoderNamedPerson = decodeByName
 
 decoderNamedPersonStream = "Name,Age\n" : decoderPersonStream
 
 ioDecoderNamedPerson = runEffect $
     for (decoderNamedPerson (each $ map C.pack decoderNamedPersonStream))
-	(lift . print)
+        (lift . print)
 
 -- test frame
 main :: IO ()
@@ -205,7 +201,7 @@ tests =
   ]
 
 decodeTests = [ testCase "HUnit" testDecoder
-	      , testCase "HUnit" testDecoderTuple
-	      , testCase "HUnit" testDecoderPerson
-	      , testCase "HUnit" testDecoderPerson'
-	      ]
+              , testCase "HUnit" testDecoderTuple
+              , testCase "HUnit" testDecoderPerson
+              , testCase "HUnit" testDecoderPerson'
+              ]
