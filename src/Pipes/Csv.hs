@@ -44,6 +44,7 @@ import qualified Pipes.Prelude as P
 
 import Pipes
 import Pipes.Csv.Encoding
+import Data.Word (Word8)
 import Data.ByteString (ByteString)
 import Blaze.ByteString.Builder (toByteString, fromByteString)
 import Data.Monoid ((<>))
@@ -185,11 +186,15 @@ encodeByName :: (Monad m, ToNamedRecord a)
              => Header -> forall r. Pipe a ByteString m r
 encodeByName = encodeByNameWith defaultEncodeOptions
 
+-- | Encode a record with a trailing CrLf
+encodeWithCrLf :: Word8 -> Record -> ByteString
+encodeWithCrLf d = toByteString . (<> fromByteString "\r\n") . encodeRecord d
+
 -- | Encode records as strict 'ByteString's
 encodeWith :: (Monad m, ToRecord a)
            => EncodeOptions
            -> forall r. Pipe a ByteString m r
-encodeWith opts = P.map (toByteString . encodeRecord delim . toRecord)
+encodeWith opts = P.map (encodeWithCrLf delim . toRecord)
   where
     delim = encDelimiter opts
 
@@ -200,12 +205,7 @@ encodeByNameWith :: (Monad m, ToNamedRecord a)
                  -> forall r. Pipe a ByteString m r
 encodeByNameWith opts hdr = do
   yield $ toByteString $ encodeRecord delim hdr <> fromByteString "\r\n"
-  P.map ( toByteString
-        . (<> fromByteString "\r\n")
-        . encodeRecord delim
-        . namedRecordToRecord hdr
-        . toNamedRecord
-        )
+  P.map (encodeWithCrLf delim . namedRecordToRecord hdr . toNamedRecord)
   where
     delim = encDelimiter opts
 
