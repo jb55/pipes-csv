@@ -1,10 +1,17 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+
 {-| This module allows constant-space CSV parsing.
 
     It feeds 'ByteString's into cassavas incremental CSV parser to attain true
     constant-space record streaming.
 -}
 
+
 module Pipes.Csv (
+  -- * Example
+  -- $example
+
   -- * Decode records
   decode,
   decodeWith,
@@ -17,20 +24,80 @@ module Pipes.Csv (
   feedParser,
   feedHeaderParser,
 
+  -- * Encode records
+  encode,
+  encodeWith,
+
+  -- * Encode named records
+  encodeByName,
+  encodeByNameWith,
+
 -- * Re-exports
 -- $reexports
   module Data.Csv
 ) where
 
+
 import qualified Data.Csv.Incremental as CI
 import qualified Data.ByteString as B
+import qualified Pipes.Prelude as P
 
-import Data.Csv.Incremental (Parser(..), HeaderParser(..))
-import Data.Csv (DecodeOptions, FromRecord(..), FromNamedRecord(..),
-                 ToRecord(..), ToField(..), FromField(..), defaultDecodeOptions,
-                 ToNamedRecord(..), Record, Field, NamedRecord, (.!), (.:), (.=))
-import Data.ByteString (ByteString)
 import Pipes
+import Pipes.Csv.Encoding
+import Data.ByteString (ByteString)
+import Blaze.ByteString.Builder (toByteString, fromByteString)
+import Data.Monoid ((<>))
+import Data.Csv.Incremental (Parser(..), HeaderParser(..))
+import Data.Csv (
+  Header, DecodeOptions, EncodeOptions(encDelimiter), FromRecord(..),
+  FromNamedRecord(..), ToRecord(..), ToField(..), FromField(..),
+  defaultDecodeOptions, defaultEncodeOptions, ToNamedRecord(..), Record, Field,
+  NamedRecord, (.!), (.:), (.=))
+
+-- $example
+--
+-- Heres a simple example that reads from stdin and writes to a file
+--
+-- @
+--import Pipes.Safe (runSafeT)
+--import qualified Pipes.Safe.Prelude  as PS
+--import qualified Pipes.ByteString    as PB
+--import Data.Vector (fromList)
+--import System.IO (IOMode(WriteMode))
+--
+--data Person = Person String Int
+--            deriving (Show)
+--
+--instance FromNamedRecord Person where
+--  parseNamedRecord p =
+--    Person \<$\> p .: \"name\"
+--           \<*\> p .: \"age\"
+--
+--personRec ~(Person name age) = [\"name\" .= name, \"age\" .= age]
+--
+--instance ToNamedRecord Person where
+--  toNamedRecord = 'namedRecord' . personRec
+--
+--persons :: Monad m => Producer ByteString m () -> Producer Person m ()
+--persons p = 'decodeByName' p >-> right
+--
+--right :: (Monad m) => Pipe (Either a b) b m r
+--right = loop
+--  where
+--    loop = await >>= \s -> case s of
+--      Left _  -> loop
+--      Right v -> yield v >> loop
+--
+--write f = PS.withFile f WriteMode PB.toHandle
+--
+--main = 'runSafeT' $ runEffect $ pipeline
+--  where
+--    header = fromList $ map fst $ personRec undefined
+--    pipeline = persons stdin
+--           \>-> right
+--           \>-> 'encodeByName' header
+--           \>-> write \"persons_out.csv\"
+-- @
 
 -- | Create a Record 'Producer' by feeding 'ByteString's into a 'Parser'
 feedParser :: Monad m
@@ -109,6 +176,38 @@ decodeByNameWith :: (Monad m, FromNamedRecord a)
                  -> Producer (Either String a) m ()
 decodeByNameWith opts src = feedHeaderParser (CI.decodeByNameWith opts) src
 
+-- | Encode records as strict 'ByteString's
+encode :: (Monad m, ToRecord a) => forall r. Pipe a ByteString m r
+encode = encodeWith defaultEncodeOptions
+
+-- | Encode named records as strict 'ByteString's
+encodeByName :: (Monad m, ToNamedRecord a)
+             => Header -> forall r. Pipe a ByteString m r
+encodeByName = encodeByNameWith defaultEncodeOptions
+
+-- | Encode records as strict 'ByteString's
+encodeWith :: (Monad m, ToRecord a)
+           => EncodeOptions
+           -> forall r. Pipe a ByteString m r
+encodeWith opts = P.map (toByteString . encodeRecord delim . toRecord)
+  where
+    delim = encDelimiter opts
+
+-- | Encode named records as strict 'ByteString's
+encodeByNameWith :: (Monad m, ToNamedRecord a)
+                 => EncodeOptions
+                 -> Header
+                 -> forall r. Pipe a ByteString m r
+encodeByNameWith opts hdr = do
+  yield $ toByteString $ encodeRecord delim hdr <> fromByteString "\r\n"
+  P.map ( toByteString
+        . (<> fromByteString "\r\n")
+        . encodeRecord delim
+        . namedRecordToRecord hdr
+        . toNamedRecord
+        )
+  where
+    delim = encDelimiter opts
 
 -- $reexports
 --

@@ -17,13 +17,15 @@ cabal-version:       >=1.10
 
 executable pipes-csv-stdin-test
   main-is: Stdin.hs
-  ghc-options: -O2 -Wall -rtsopts 
+  ghc-options: -O2 -Wall -rtsopts
   -- other-modules:
   -- other-extensions:
   build-depends: base >=4.6 && <4.7
                , cassava >=0.2 && <0.3
                , pipes >=4.0 && <4.1
                , pipes-bytestring >=1 && <2
-               , pipes-csv
+               , pipes-csv >= 1.2
+               , pipes-safe
+               , vector < 0.11
   -- hs-source-dirs:
   default-language:    Haskell2010
