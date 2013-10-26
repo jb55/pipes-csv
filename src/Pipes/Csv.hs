@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
 
 {-| This module allows constant-space CSV parsing.
 
@@ -178,12 +177,12 @@ decodeByNameWith :: (Monad m, FromNamedRecord a)
 decodeByNameWith opts src = feedHeaderParser (CI.decodeByNameWith opts) src
 
 -- | Encode records as strict 'ByteString's
-encode :: (Monad m, ToRecord a) => forall r. Pipe a ByteString m r
+encode :: (Monad m, ToRecord a) => Pipe a ByteString m r
 encode = encodeWith defaultEncodeOptions
 
 -- | Encode named records as strict 'ByteString's
 encodeByName :: (Monad m, ToNamedRecord a)
-             => Header -> forall r. Pipe a ByteString m r
+             => Header -> Pipe a ByteString m r
 encodeByName = encodeByNameWith defaultEncodeOptions
 
 -- | Encode a record with a trailing CrLf
@@ -193,7 +192,7 @@ encodeWithCrLf d = toByteString . (<> fromByteString "\r\n") . encodeRecord d
 -- | Encode records as strict 'ByteString's
 encodeWith :: (Monad m, ToRecord a)
            => EncodeOptions
-           -> forall r. Pipe a ByteString m r
+           -> Pipe a ByteString m r
 encodeWith opts = P.map (encodeWithCrLf delim . toRecord)
   where
     delim = encDelimiter opts
@@ -202,7 +201,7 @@ encodeWith opts = P.map (encodeWithCrLf delim . toRecord)
 encodeByNameWith :: (Monad m, ToNamedRecord a)
                  => EncodeOptions
                  -> Header
-                 -> forall r. Pipe a ByteString m r
+                 -> Pipe a ByteString m r
 encodeByNameWith opts hdr = do
   yield $ toByteString $ encodeRecord delim hdr <> fromByteString "\r\n"
   P.map (encodeWithCrLf delim . namedRecordToRecord hdr . toNamedRecord)
