@@ -25,10 +25,36 @@ library
     , Pipes.Csv.Encoding
 
   build-depends:
-      base       >= 4       && < 5
-    , cassava    >= 0.3     && < 0.4
-    , pipes      >= 4       && < 5
-    , unordered-containers     < 0.3
-    , blaze-builder            < 0.4
-    , bytestring               < 0.11
-    , vector                   < 0.11
+      base                  >= 4       && < 5
+    , cassava               >= 0.3     && < 0.4
+    , pipes                 >= 4       && < 5
+    , unordered-containers  < 0.3
+    , blaze-builder         < 0.4
+    , bytestring            < 0.11
+    , vector                < 0.11
+
+
+flag test-hunit
+  default: True
+  manual: True
+
+test-suite hunit
+  type: exitcode-stdio-1.0
+  main-is: test-pipes-csv.hs
+  ghc-options: -w -threaded -rtsopts -with-rtsopts=-N
+  hs-source-dirs: test
+
+  if !flag(test-hunit)
+    buildable: False
+  else
+    build-depends:
+        base
+      , HUnit >= 1.2
+      , pipes                 >= 4       && < 5
+      , pipes-bytestring     >= 2       && < 3
+      , pipes-csv
+      , cassava
+      , vector
+      , bytestring
+      , test-framework       >= 0.6
+      , test-framework-hunit >= 0.2

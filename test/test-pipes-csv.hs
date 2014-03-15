@@ -14,7 +14,8 @@ import           Control.Monad
 import qualified Data.ByteString.Char8 as C
 import qualified Data.Vector as DV
 
-import           Data.Csv ((.:), (.!), FromNamedRecord(..), FromRecord(..), Record)
+import           Data.Csv ((.:), (.!), FromNamedRecord(..), FromRecord(..),
+                           Record, HasHeader(..))
 import           Pipes.ByteString (stdin, ByteString)
 import           Pipes.Csv (decode, decodeByName)
 import           Pipes
@@ -32,7 +33,7 @@ right = loop
 decoder :: Monad m
         => Producer ByteString m ()
         -> Producer (Either String Record) m ()
-decoder = decode False
+decoder = decode NoHeader
 
 decoderStream =
     [ ""
@@ -64,7 +65,7 @@ ioDecoder = runEffect $
 decoderTuple :: Monad m
          => Producer ByteString m ()
          -> Producer (Either String (Int, Int)) m ()
-decoderTuple = decode False
+decoderTuple = decode NoHeader
 
 decoderTupleStream =
     [ ""
@@ -108,7 +109,7 @@ instance FromRecord Person where
 decoderPerson :: Monad m
         => Producer ByteString m ()
         -> Producer (Either String Person) m ()
-decoderPerson = decode False
+decoderPerson = decode NoHeader
 
 decoderPersonStream =
     [ ""
@@ -160,7 +161,7 @@ instance FromRecord Person' where
 decoderPerson' :: Monad m
         => Producer ByteString m ()
         -> Producer (Either String Person') m ()
-decoderPerson' = decode False
+decoderPerson' = decode NoHeader
 
 ioDecoderPerson' = runEffect $
     for (decoderPerson' (each $ map C.pack decoderPersonStream)) (lift . print)
