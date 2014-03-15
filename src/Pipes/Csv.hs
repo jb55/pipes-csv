@@ -82,6 +82,8 @@ import Data.Csv (
 --persons :: Monad m => Producer ByteString m () -> Producer Person m ()
 --persons p = 'decodeByName' p >-> right
 --
+---- note: right can be replaced with Pipes.Prelude.concat in ghc-7.8,
+----       thanks to a Foldable instance for Either
 --right :: (Monad m) => Pipe (Either a b) b m r
 --right = loop
 --  where
