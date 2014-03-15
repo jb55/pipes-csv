@@ -33,7 +33,8 @@ module Pipes.Csv (
 
 -- * Re-exports
 -- $reexports
-  module Data.Csv
+  module Data.Csv,
+  HasHeader(..)
 ) where
 
 
@@ -47,7 +48,7 @@ import Data.Word (Word8)
 import Data.ByteString (ByteString)
 import Blaze.ByteString.Builder (toByteString, fromByteString)
 import Data.Monoid ((<>))
-import Data.Csv.Incremental (Parser(..), HeaderParser(..))
+import Data.Csv.Incremental (Parser(..), HeaderParser(..), HasHeader(..))
 import Data.Csv (
   Header, DecodeOptions, EncodeOptions(encDelimiter), FromRecord(..),
   FromNamedRecord(..), ToRecord(..), ToField(..), FromField(..),
@@ -107,8 +108,7 @@ feedParser :: Monad m
 feedParser parser source = case parser of
     Fail _ e  -> yield (Left e)
     Done es   -> each es
-    Some es k -> each es >> cont k source
-    Partial k -> cont k source
+    Many es k -> each es >> cont k source
   where
     cont = continue feedParser
 
@@ -145,7 +145,7 @@ continue feed k producer = do
 
 -- | Equivalent to @'decodeWith' 'defaultDecodeOptions'@.
 decode :: (Monad m, FromRecord a)
-       => Bool
+       => CI.HasHeader
        -> Producer ByteString m ()
        -> Producer (Either String a) m ()
 decode = decodeWith defaultDecodeOptions
@@ -155,10 +155,10 @@ decode = decodeWith defaultDecodeOptions
 -- producing either errors or 'FromRecord's.
 decodeWith :: (Monad m, FromRecord a)
            => DecodeOptions
-           -> Bool
+           -> HasHeader
            -> Producer ByteString m ()
            -> Producer (Either String a) m ()
-decodeWith opts skipHeader src = feedParser (CI.decodeWith opts skipHeader) src
+decodeWith opts hasHeader src = feedParser (CI.decodeWith opts hasHeader) src
 
 
 -- | Equivalent to @'decodeByNameWith' 'defaultDecodeOptions'@.
