@@ -10,9 +10,5 @@ install:
   - cabal configure $mode
   - cabal build
 
-script:
-  - $script
-  - hlint src --cpp-define HLINT
-
 env:
   - mode="--enable-tests" script="cabal test"
