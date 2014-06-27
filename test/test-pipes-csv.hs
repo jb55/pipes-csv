@@ -123,7 +123,7 @@ decoderPersonStream =
     , "\n"
     , "Sue,22abc\n" -- consumes 22 and discards "abc"
     -- , "zz\n" -- throws an exception
-    , "no space allowed, 99\n"
+    , "space allowed, 99\n"
     , "eof,99"
     ]
 
@@ -133,8 +133,8 @@ decoderPersonResult =
     , Right (Person "Jimbo" 21)
     , Right (Person "Bill" 1)
     , Right (Person "Billy" 2)
-    , Right (Person "Sue" 22)
-    , Left "expected Int, got \" 99\" (Failed reading: takeWhile1)"
+    , Left "expected Int, got \"22abc\" (incomplete field parse, leftover: [97,98,99])"
+    , Right (Person "space allowed" 99)
     , Right (Person "eof" 99)
     ]
 
@@ -166,7 +166,7 @@ decoderPerson' = decode NoHeader
 ioDecoderPerson' = runEffect $
     for (decoderPerson' (each $ map C.pack decoderPersonStream)) (lift . print)
 
-decoderPerson'Result = [21,55,21,1,2,22,99]
+decoderPerson'Result = [21,55,21,1,2,99,99]
 
 testDecoderPerson' :: Assertion
 testDecoderPerson' =
