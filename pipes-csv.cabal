@@ -29,7 +29,7 @@ library
     , cassava               >= 0.4     && < 0.5
     , pipes                 >= 4       && < 5
     , unordered-containers  < 0.3
-    , blaze-builder         < 0.4
+    , blaze-builder         < 0.5
     , bytestring            < 0.11
     , vector                < 0.11
 
