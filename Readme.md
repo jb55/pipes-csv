@@ -3,7 +3,7 @@
 
   Constant-space streaming csv parsing with cassava and pipes
 
-  [![build status](https://secure.travis-ci.org/jb55/pipes-csv.png)](http://travis-ci.org/jb55/pipes-csv)
+  [![build status](https://secure.travis-ci.org/jb55/pipes-csv.svg)](http://travis-ci.org/jb55/pipes-csv)
 
 ## Installation
 
