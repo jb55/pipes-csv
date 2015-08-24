@@ -84,7 +84,7 @@ decoderTupleResult =
     , Right (1,2)
     , Right (2,3)
     , Left "expected Int, got \"one\" (Failed reading: takeWhile1)"
-    , Left "cannot unpack array of length 1 into a pair. Input record: fromList [\"no line end needed on last chunk\"]"
+    , Left "cannot unpack array of length 1 into a pair. Input record: [\"no line end needed on last chunk\"]"
     , Right (0,0)
     ]
 
