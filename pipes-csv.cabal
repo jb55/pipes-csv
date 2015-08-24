@@ -25,13 +25,13 @@ library
     , Pipes.Csv.Encoding
 
   build-depends:
-      base                  >= 4       && < 5
-    , cassava               >= 0.4     && < 0.5
-    , pipes                 >= 4       && < 5
-    , unordered-containers  < 0.3
-    , blaze-builder         < 0.5
-    , bytestring            < 0.11
-    , vector                < 0.11
+      base                  >= 4
+    , cassava               >= 0.4
+    , pipes                 >= 4
+    , unordered-containers  >= 0.2
+    , blaze-builder         >= 0.4
+    , bytestring            >= 0.10
+    , vector                >= 0.11
 
 
 flag test-hunit
@@ -48,13 +48,13 @@ test-suite hunit
     buildable: False
   else
     build-depends:
-        base
-      , HUnit >= 1.2
-      , pipes                >= 4 && < 5
-      , pipes-bytestring     >= 2 && < 3
+        base                 >= 4
+      , HUnit                >= 1.2
+      , pipes                >= 4
+      , pipes-bytestring     >= 2
       , pipes-csv
-      , cassava
-      , vector
-      , bytestring
+      , cassava              >= 0.4
+      , vector               >= 0.11
+      , bytestring           >= 0.10
       , test-framework       >= 0.6
       , test-framework-hunit >= 0.2
