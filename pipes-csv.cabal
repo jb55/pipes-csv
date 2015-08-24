@@ -1,5 +1,5 @@
 name:                pipes-csv
-version:             1.4.0
+version:             1.4.1
 synopsis:            Fast, streaming csv parser
 license:             MIT
 license-file:        LICENSE
