@@ -9,8 +9,10 @@ import           Test.Framework as TF
 import           Test.Framework.Providers.HUnit (testCase)
 import           Test.HUnit
 
+import           Data.List.Utils (replace)
 import           Control.Applicative
 import           Control.Monad
+import           Control.Arrow (left)
 import qualified Data.ByteString.Char8 as C
 import qualified Data.Vector as DV
 
@@ -90,13 +92,9 @@ decoderTupleResult =
 
 testDecoderTuple :: Assertion
 testDecoderTuple =
-    decoderTupleResult @=?
-    P.toList (decoderTuple (each $ map C.pack decoderTupleStream))
-
-ioDecoderTuple = runEffect $
-    for (decoderTuple (each $ map C.pack decoderTupleStream)) (lift . print)
-
--- (unnamed) Person Record
+    let res = P.toList (decoderTuple (each $ map C.pack decoderTupleStream))
+        fixup = replace "fromList " "" -- vector <0.11 compatibility
+    in decoderTupleResult @=? map (left fixup) res
 
 data Person = Person String Int
             deriving (Show, Eq)
