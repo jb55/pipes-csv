@@ -7,8 +7,8 @@ let pkgs = nixpkgs.pkgs;
         src = pkgs.fetchFromGitHub {
           owner = "jb55";
           repo = "cassava";
-          rev = "e3cbd777ccb7026c307b76107f2b00b1004d420a";
-          sha256 = "0467h34ap07gh4yczk8fvghl2magbgdhibhmhccd6w3fl345wkq5";
+          rev = "2eb6e29bd5e141c1a9f0e980f7ac1c915e06e02a";
+          sha256 = "1r1dv7yaalxja06jxqi7rjcdkb72mb2prnk8crzqap0gkmbahqcd";
         };
       });
     };
