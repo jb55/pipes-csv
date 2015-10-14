@@ -39,6 +39,7 @@ module Pipes.Csv (
 
 
 import qualified Data.Csv.Incremental as CI
+import qualified Data.Csv.Conversion as Conversion
 import qualified Data.ByteString as B
 import qualified Pipes.Prelude as P
 
@@ -153,6 +154,16 @@ decode :: (Monad m, FromRecord a)
 decode = decodeWith defaultDecodeOptions
 
 
+-- | Same as @'decode', except you can pass an explicit parser value instead
+-- of using the typeclass
+decode' :: Monad m
+        => (Record -> Conversion.Parser a)
+        -> CI.HasHeader
+        -> Producer ByteString m ()
+        -> Producer (Either String a) m ()
+decode' p = decodeWith' p defaultDecodeOptions
+
+
 -- | Create a 'Producer' that takes a 'ByteString' 'Producer' as input,
 -- producing either errors or 'FromRecord's.
 decodeWith :: (Monad m, FromRecord a)
@@ -163,7 +174,17 @@ decodeWith :: (Monad m, FromRecord a)
 decodeWith opts hasHeader src = feedParser (CI.decodeWith opts hasHeader) src
 
 
--- | Equivalent to @'decodeByNameWith' 'defaultDecodeOptions'@.
+-- | Create a 'Producer' that takes a 'ByteString' 'Producer' as input,
+-- producing either errors or 'FromRecord's.
+decodeWith' :: Monad m
+            => (Record -> Conversion.Parser a)
+            -> DecodeOptions
+            -> HasHeader
+            -> Producer ByteString m ()
+            -> Producer (Either String a) m ()
+decodeWith' p opts hasHeader src = feedParser (CI.decodeWith' p opts hasHeader) src
+
+
 decodeByName :: (Monad m, FromNamedRecord a)
              => Producer ByteString m ()
              -> Producer (Either String a) m ()
