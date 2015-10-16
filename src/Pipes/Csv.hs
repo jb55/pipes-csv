@@ -15,9 +15,17 @@ module Pipes.Csv (
   decode,
   decodeWith,
 
+  -- * Decode records, typeclassless
+  decode',
+  decodeWith',
+
   -- * Decode named records
   decodeByName,
   decodeByNameWith,
+
+  -- * Decode named records, typeclassless
+  decodeByName',
+  decodeByNameWith',
 
   -- * Decode parsed records
   feedParser,
