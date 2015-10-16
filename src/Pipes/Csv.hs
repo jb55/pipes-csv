@@ -191,6 +191,12 @@ decodeByName :: (Monad m, FromNamedRecord a)
 decodeByName = decodeByNameWith defaultDecodeOptions
 
 
+decodeByName' :: Monad m
+              => Producer ByteString m ()
+              -> Producer (Either String a) m ()
+decodeByName' = decodeByNameWith defaultDecodeOptions
+
+
 -- | Create a 'Producer' that takes a 'ByteString' 'Producer' as input,
 -- producing either errors or 'FromNamedRecord's.
 decodeByNameWith :: (Monad m, FromNamedRecord a)
