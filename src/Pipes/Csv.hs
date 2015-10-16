@@ -192,9 +192,10 @@ decodeByName = decodeByNameWith defaultDecodeOptions
 
 
 decodeByName' :: Monad m
-              => Producer ByteString m ()
+              => (NamedRecord -> Conversion.Parser a)
+              -> Producer ByteString m ()
               -> Producer (Either String a) m ()
-decodeByName' = decodeByNameWith defaultDecodeOptions
+decodeByName' p = decodeByNameWith' p defaultDecodeOptions
 
 
 -- | Create a 'Producer' that takes a 'ByteString' 'Producer' as input,
@@ -204,6 +205,13 @@ decodeByNameWith :: (Monad m, FromNamedRecord a)
                  -> Producer ByteString m ()
                  -> Producer (Either String a) m ()
 decodeByNameWith opts src = feedHeaderParser (CI.decodeByNameWith opts) src
+
+decodeByNameWith' :: Monad m
+                  => (NamedRecord -> Conversion.Parser a)
+                  -> DecodeOptions
+                  -> Producer ByteString m ()
+                  -> Producer (Either String a) m ()
+decodeByNameWith' p opts src = feedHeaderParser (CI.decodeByNameWith' p opts) src
 
 -- | Encode records as strict 'ByteString's
 encode :: (Monad m, ToRecord a) => Pipe a ByteString m r
