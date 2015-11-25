@@ -60,46 +60,46 @@ import Data.Csv (
 -- Heres a simple example that reads from stdin and writes to a file
 --
 -- @
---import Pipes.Safe (runSafeT)
---import qualified Pipes.Safe.Prelude  as PS
---import qualified Pipes.ByteString    as PB
---import Data.Vector (fromList)
---import System.IO (IOMode(WriteMode))
+--     import Pipes.Safe (runSafeT)
+--     import qualified Pipes.Safe.Prelude  as PS
+--     import qualified Pipes.ByteString    as PB
+--     import Data.Vector (fromList)
+--     import System.IO (IOMode(WriteMode))
 --
---data Person = Person String Int
---            deriving (Show)
+--     data Person = Person String Int
+--                 deriving (Show)
 --
---instance FromNamedRecord Person where
---  parseNamedRecord p =
---    Person \<$\> p .: \"name\"
---           \<*\> p .: \"age\"
+--     instance FromNamedRecord Person where
+--       parseNamedRecord p =
+--         Person \<$\> p .: \"name\"
+--                \<*\> p .: \"age\"
 --
---personRec ~(Person name age) = [\"name\" .= name, \"age\" .= age]
+--     personRec ~(Person name age) = [\"name\" .= name, \"age\" .= age]
 --
---instance ToNamedRecord Person where
---  toNamedRecord = 'namedRecord' . personRec
+--     instance ToNamedRecord Person where
+--       toNamedRecord = 'namedRecord' . personRec
 --
---persons :: Monad m => Producer ByteString m () -> Producer Person m ()
---persons p = 'decodeByName' p >-> right
+--     persons :: Monad m => Producer ByteString m () -> Producer Person m ()
+--     persons p = 'decodeByName' p >-> right
 --
----- note: right can be replaced with Pipes.Prelude.concat in ghc-7.8,
-----       thanks to a Foldable instance for Either
---right :: (Monad m) => Pipe (Either a b) b m r
---right = loop
---  where
---    loop = await >>= \s -> case s of
---      Left _  -> loop
---      Right v -> yield v >> loop
+--     -- note: right can be replaced with Pipes.Prelude.concat in ghc-7.8,
+--     --       thanks to a Foldable instance for Either
+--     right :: (Monad m) => Pipe (Either a b) b m r
+--     right = loop
+--       where
+--         loop = await >>= \s -> case s of
+--           Left _  -> loop
+--           Right v -> yield v >> loop
 --
---write f = PS.withFile f WriteMode PB.toHandle
+--     write f = PS.withFile f WriteMode PB.toHandle
 --
---main = 'runSafeT' $ runEffect $ pipeline
---  where
---    header = fromList $ map fst $ personRec undefined
---    pipeline = persons stdin
---           \>-> right
---           \>-> 'encodeByName' header
---           \>-> write \"persons_out.csv\"
+--     main = 'runSafeT' $ runEffect $ pipeline
+--       where
+--         header = fromList $ map fst $ personRec undefined
+--         pipeline = persons stdin
+--                \>-> right
+--                \>-> 'encodeByName' header
+--                \>-> write \"persons_out.csv\"
 -- @
 
 -- | Create a Record 'Producer' by feeding 'ByteString's into a 'Parser'
